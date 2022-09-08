@@ -1,22 +1,12 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import MongoStore from "connect-mongo";
+import passport from "passport";
 import router from "./routes/routes.js";
 
-const advancedOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 const app = express();
-
-/**
- * <------------------------- Configuracion de Pug ------------------------->
- */
-
-app.set("view engine", ".pug");
-app.set("views", "./src/views");
-
-/**
- * <------------------------- Configuracion de Session ------------------------->
- */
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const ageCookie = (minutes) => {
 	if (minutes === 1) {
@@ -29,26 +19,24 @@ const ageCookie = (minutes) => {
 app.use(cookieParser());
 app.use(
 	session({
-		store: MongoStore.create({
-			mongoUrl:
-				"mongodb+srv://michaelviloria:michaelviloria@cluster0.tctmaqg.mongodb.net/?retryWrites=true&w=majority",
-			mongoOptions: advancedOptions,
-			ttl: 60,
-			collectionName: "sessions",
-		}),
 		secret: "secret",
 		resave: false,
 		saveUninitialized: false,
-		cookie: { maxAge: ageCookie(2) },
+		rolling: true,
+		cookie: {
+			maxAge: ageCookie(2),
+			secure: false,
+			httpOnly: false,
+		},
 	})
 );
 
-/**
- * <------------------------- Configuracion de Rutas ------------------------->
- */
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.set("view engine", ".pug");
+app.set("views", "./src/views");
+
 app.use(router);
 
 export default app;

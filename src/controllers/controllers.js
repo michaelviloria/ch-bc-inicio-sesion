@@ -1,25 +1,38 @@
-export const home = (req, res) => {
+export const getHome = (req, res) => {
 	res.render("home", { name: req.session.name });
 };
 
-export const login = (req, res) => {
-	let { name } = req.body;
-	req.session.name = name;
-	res.redirect("/");
+// Login
+export const getLogin = (req, res) => {
+	if (req.isAuthenticated()) {
+		const { username } = req.user;
+		res.render("home", { username });
+	} else res.render("login");
 };
 
-export const destroy = (req, res) => {
-	try {
-		req.session.destroy();
-		res.redirect("/");
-	} catch (error) {
-		res.status(500).send("Error: ", error);
-	}
+export const postLogin = (req, res) => {
+	const { username } = req.user;
+	res.render("home", { username });
 };
 
-// export const logout = (req, res) => {
-// 	setTimeout(() => {
-// 		res.redirect("/");
-// 	}, 3000);
-// 	res.render("logout", {});
-// };
+export const getFailLogin = (req, res) => res.render("failLogin");
+
+// Singup
+export const getSignup = (req, res) => res.render("signup");
+
+export const postSignup = (req, res) => {
+	const { username } = req.user;
+	res.render("home", { username });
+};
+
+export const getFailSignup = (req, res) => res.render("failSignup");
+
+// Logout
+export const getLogout = (req, res) => {
+	req.logout((error) => {
+		if (error) next(error);
+	});
+	res.redirect("/login");
+};
+
+export const failRoute = (req, res) => res.status(404).render("routing-error");
